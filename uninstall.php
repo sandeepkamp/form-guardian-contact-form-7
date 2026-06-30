@@ -11,10 +11,10 @@ if (!function_exists('dbDelta')) {
 }
 
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
-// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange
 $wpdb->query(
     "DROP TABLE IF EXISTS {$wpdb->prefix}wfg_logs"
 );
+
 // phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange
 
 delete_option('wfg_block_keywords');
