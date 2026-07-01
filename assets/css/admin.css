@@ -1,15 +1,15 @@
-.wfg-wrap {
+.fgucf7-wrap {
     max-width: 1200px;
 }
 
-.wfg-cards {
+.fgucf7-cards {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
     margin-top: 20px;
 }
 
-.wfg-card {
+.fgucf7-card {
     flex: 1;
     min-width: 220px;
     background: #fff;
@@ -19,18 +19,18 @@
     box-shadow: 0 1px 3px rgba(0,0,0,.08);
 }
 
-.wfg-card h2 {
+.fgucf7-card h2 {
     margin: 0;
     font-size: 32px;
     line-height: 1;
 }
 
-.wfg-card p {
+.fgucf7-card p {
     margin-top: 10px;
     color: #666;
 }
 
-.wfg-chart-card{
+.fgucf7-chart-card{
     background:#fff;
     padding:25px;
     margin-top:20px;

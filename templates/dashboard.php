@@ -4,28 +4,28 @@ if (!defined('ABSPATH')) {
 }
 ?>
 
-<div class="wrap wfg-wrap">
+<div class="wrap fgucf7-wrap">
 
   <h1>Contact Form 7 Guardian</h1>
 
-  <div class="wfg-cards">
+  <div class="fgucf7-cards">
 
-    <div class="wfg-card">
+    <div class="fgucf7-card">
       <h2><?php echo esc_html($total); ?></h2>
       <p>Total Submissions</p>
     </div>
 
-    <div class="wfg-card">
+    <div class="fgucf7-card">
       <h2><?php echo esc_html($blocked); ?></h2>
       <p>Blocked</p>
     </div>
 
-    <div class="wfg-card">
+    <div class="fgucf7-card">
       <h2><?php echo esc_html($passed); ?></h2>
       <p>Passed</p>
     </div>
 
-    <div class="wfg-card">
+    <div class="fgucf7-card">
       <h2><?php echo esc_html($today); ?></h2>
       <p>Today's Blocks</p>
     </div>
@@ -33,25 +33,25 @@ if (!defined('ABSPATH')) {
   </div>
 
 
-  <div class="wfg-chart-card">
+  <div class="fgucf7-chart-card">
 
     <h2>
       Submission Trends
     </h2>
 
     <canvas
-      id="wfgChart"
+      id="fgucf7Chart"
       height="100">
     </canvas>
 
   </div>
 
-  <div class="wfg-actions">
+  <div class="fgucf7-actions">
 
     <a
       href="<?php echo esc_url(
               admin_url(
-                'admin.php?page=wfg-logs'
+                'admin.php?page=fgucf7-logs'
               )
             ); ?>"
       class="button button-primary">

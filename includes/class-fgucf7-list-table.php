@@ -8,7 +8,7 @@ if (!class_exists('WP_List_Table')) {
   require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
 
-class WFG_List_Table extends WP_List_Table
+class FGUCF7_List_Table extends WP_List_Table
 {
 
   public function __construct()
@@ -97,7 +97,7 @@ class WFG_List_Table extends WP_List_Table
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
         $wpdb->delete(
-          $wpdb->prefix . 'wfg_logs',
+          $wpdb->prefix . 'fgucf7_logs',
           ['id' => $id],
           ['%d']
         );
@@ -110,14 +110,14 @@ class WFG_List_Table extends WP_List_Table
 
     global $wpdb;
 
-    $table = $wpdb->prefix . 'wfg_logs';
+    $table = $wpdb->prefix . 'fgucf7_logs';
 
     $per_page = 20;
 
     $current_page = $this->get_pagenum();
 
     if (isset($_REQUEST['s'])) {
-      check_admin_referer('wfg_logs_search', 'wfg_logs_search_nonce');
+      check_admin_referer('fgucf7_logs_search', 'fgucf7_logs_search_nonce');
     }
 
     $search = isset($_REQUEST['s'])
@@ -129,14 +129,14 @@ class WFG_List_Table extends WP_List_Table
     if (!empty($search)) {
       $search_like = '%' . $wpdb->esc_like($search) . '%';
 
-      $search_cache_key = 'wfg_total_items_' . md5($search_like);
+      $search_cache_key = 'fgucf7_total_items_' . md5($search_like);
       $total_items = wp_cache_get($search_cache_key, 'form-guardian');
       
       if (false === $total_items) {
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
         $total_items = (int) $wpdb->get_var(
           $wpdb->prepare(
-            'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'wfg_logs WHERE email LIKE %s',
+            'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs WHERE email LIKE %s',
             $search_like
           )
         );
@@ -145,14 +145,14 @@ class WFG_List_Table extends WP_List_Table
 
       $offset = ($current_page - 1) * $per_page;
 
-      $items_cache_key = 'wfg_items_' . md5($search_like . '_' . $per_page . '_' . $offset);
+      $items_cache_key = 'fgucf7_items_' . md5($search_like . '_' . $per_page . '_' . $offset);
       $items = wp_cache_get($items_cache_key, 'form-guardian');
       
       if (false === $items) {
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
         $items = $wpdb->get_results(
           $wpdb->prepare(
-            'SELECT * FROM ' . $wpdb->prefix . 'wfg_logs WHERE email LIKE %s ORDER BY id DESC LIMIT %d OFFSET %d',
+            'SELECT * FROM ' . $wpdb->prefix . 'fgucf7_logs WHERE email LIKE %s ORDER BY id DESC LIMIT %d OFFSET %d',
             $search_like,
             $per_page,
             $offset
@@ -162,27 +162,27 @@ class WFG_List_Table extends WP_List_Table
         wp_cache_set($items_cache_key, $items, 'form-guardian', 60);
       }
     } else {
-      $total_cache_key = 'wfg_total_items_all';
+      $total_cache_key = 'fgucf7_total_items_all';
       $total_items = wp_cache_get($total_cache_key, 'form-guardian');
       
       if (false === $total_items) {
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
         $total_items = (int) $wpdb->get_var(
-          'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'wfg_logs'
+          'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs'
         );
         wp_cache_set($total_cache_key, $total_items, 'form-guardian', 60);
       }
 
       $offset = ($current_page - 1) * $per_page;
 
-      $items_all_cache_key = 'wfg_items_all_' . $per_page . '_' . $offset;
+      $items_all_cache_key = 'fgucf7_items_all_' . $per_page . '_' . $offset;
       $items = wp_cache_get($items_all_cache_key, 'form-guardian');
       
       if (false === $items) {
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
         $items = $wpdb->get_results(
           $wpdb->prepare(
-            'SELECT * FROM ' . $wpdb->prefix . 'wfg_logs ORDER BY id DESC LIMIT %d OFFSET %d',
+            'SELECT * FROM ' . $wpdb->prefix . 'fgucf7_logs ORDER BY id DESC LIMIT %d OFFSET %d',
             $per_page,
             $offset
           ),

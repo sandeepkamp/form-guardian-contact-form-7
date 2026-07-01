@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class WFG_Spam_Checker
+class FGUCF7_Spam_Checker
 {
 
     public function __construct()
@@ -45,10 +45,10 @@ class WFG_Spam_Checker
         $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 
         if (
-            isset($data['wfg_website']) && trim(sanitize_text_field(wp_unslash((string) $data['wfg_website']))) !== ''
+            isset($data['fgucf7_website']) && trim(sanitize_text_field(wp_unslash((string) $data['fgucf7_website']))) !== ''
         ) {
 
-            WFG_Logger::log(
+            FGUCF7_Logger::log(
                 $email,
                 $ip,
                 'blocked',
@@ -65,14 +65,14 @@ class WFG_Spam_Checker
         $count = 0;
 
         if ($ip !== '') {
-            $cache_key = 'wfg_rate_limit_' . md5($ip);
+            $cache_key = 'fgucf7_rate_limit_' . md5($ip);
             $count = wp_cache_get($cache_key, 'form-guardian');
             
             if (false === $count) {
                 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
                 $count = (int) $wpdb->get_var(
                     $wpdb->prepare(
-                        'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'wfg_logs WHERE ip_address = %s AND created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)',
+                        'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs WHERE ip_address = %s AND created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)',
                         $ip
                     )
                 );
@@ -80,11 +80,11 @@ class WFG_Spam_Checker
             }
         }
 
-        $limit = max(1, (int) get_option('wfg_max_attempts', 5));
+        $limit = max(1, (int) get_option('fgucf7_max_attempts', 5));
 
         if ($count >= $limit) {
 
-            WFG_Logger::log(
+            FGUCF7_Logger::log(
                 $email,
                 $ip,
                 'blocked',
@@ -99,7 +99,7 @@ class WFG_Spam_Checker
         $keywords = array_filter(
             array_map(
                 'trim',
-                preg_split('/\r\n|[\r\n]/', (string) get_option('wfg_block_keywords', ''))
+                preg_split('/\r\n|[\r\n]/', (string) get_option('fgucf7_block_keywords', ''))
             )
         );
 
@@ -107,7 +107,7 @@ class WFG_Spam_Checker
 
             if ($keyword !== '' && stripos($message, $keyword) !== false) {
 
-                WFG_Logger::log(
+                FGUCF7_Logger::log(
                     $email,
                     $ip,
                     'blocked',
@@ -129,13 +129,13 @@ class WFG_Spam_Checker
         $blocked_domains = array_filter(
             array_map(
                 'trim',
-                preg_split('/\r\n|[\r\n]/', (string) get_option('wfg_disposable_domains', ''))
+                preg_split('/\r\n|[\r\n]/', (string) get_option('fgucf7_disposable_domains', ''))
             )
         );
 
         if ($domain !== '' && in_array($domain, $blocked_domains, true)) {
 
-            WFG_Logger::log(
+            FGUCF7_Logger::log(
                 $email,
                 $ip,
                 'blocked',
@@ -147,7 +147,7 @@ class WFG_Spam_Checker
             return;
         }
 
-        WFG_Logger::log(
+        FGUCF7_Logger::log(
             $email,
             $ip,
             'passed',
@@ -159,12 +159,12 @@ class WFG_Spam_Checker
     {
 
         $honeypot = '
-        <p class="wfg-honeypot" style="position:absolute;left:-9999px;">
+        <p class="fgucf7-honeypot" style="position:absolute;left:-9999px;">
             <label>
                 Leave this field empty
                 <input
                     type="text"
-                    name="wfg_website"
+                    name="fgucf7_website"
                     value=""
                     autocomplete="off"
                     tabindex="-1"

@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class WFG_Logger
+class FGUCF7_Logger
 {
 
     public static function create_table()
@@ -12,7 +12,7 @@ class WFG_Logger
 
         global $wpdb;
 
-        $table = $wpdb->prefix . 'wfg_logs';
+        $table = $wpdb->prefix . 'fgucf7_logs';
 
         $charset_collate = $wpdb->get_charset_collate();
 
@@ -43,7 +43,7 @@ class WFG_Logger
         }
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
-        $wpdb->query('DROP TABLE IF EXISTS ' . $wpdb->prefix . 'wfg_logs');
+        $wpdb->query('DROP TABLE IF EXISTS ' . $wpdb->prefix . 'fgucf7_logs');
     }
 
     public static function log($email, $ip, $status, $reason)
@@ -53,7 +53,7 @@ class WFG_Logger
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
         $wpdb->insert(
-            $wpdb->prefix . 'wfg_logs',
+            $wpdb->prefix . 'fgucf7_logs',
             [
                 'email' => $email,
                 'ip_address' => $ip,

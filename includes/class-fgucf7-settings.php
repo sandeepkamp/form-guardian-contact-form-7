@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class WFG_Settings
+class FGUCF7_Settings
 {
 
     public function __construct()
@@ -16,32 +16,32 @@ class WFG_Settings
     public function register_settings()
     {
         register_setting(
-            'wfg_settings_group',
-            'wfg_block_keywords',
+            'fgucf7_settings_group',
+            'fgucf7_block_keywords',
             [
                 'sanitize_callback' => 'sanitize_textarea_field',
             ]
         );
 
         register_setting(
-            'wfg_settings_group',
-            'wfg_disposable_domains',
+            'fgucf7_settings_group',
+            'fgucf7_disposable_domains',
             [
                 'sanitize_callback' => 'sanitize_textarea_field',
             ]
         );
 
         register_setting(
-            'wfg_settings_group',
-            'wfg_max_attempts',
+            'fgucf7_settings_group',
+            'fgucf7_max_attempts',
             [
                 'sanitize_callback' => 'absint',
             ]
         );
 
         register_setting(
-            'wfg_settings_group',
-            'wfg_log_retention_days',
+            'fgucf7_settings_group',
+            'fgucf7_log_retention_days',
             [
                 'sanitize_callback' => 'absint',
             ]

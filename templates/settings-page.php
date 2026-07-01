@@ -35,8 +35,8 @@ $tab = isset($_GET['tab'])
     <form method="post" action="options.php">
 
         <?php
-        settings_fields('wfg_settings_group');
-        do_settings_sections('wfg_settings_group');
+        settings_fields('fgucf7_settings_group');
+        do_settings_sections('fgucf7_settings_group');
         ?>
 
         <?php if ($tab === 'general') : ?>
@@ -48,9 +48,9 @@ $tab = isset($_GET['tab'])
     <td>
         <input
             type="number"
-            name="wfg_max_attempts"
+            name="fgucf7_max_attempts"
             value="<?php echo esc_attr(
-                get_option('wfg_max_attempts', 5)
+                get_option('fgucf7_max_attempts', 5)
             ); ?>">
     </td>
 </tr>
@@ -67,10 +67,10 @@ $tab = isset($_GET['tab'])
     <th>Blocked Keywords</th>
     <td>
         <textarea
-            name="wfg_block_keywords"
+            name="fgucf7_block_keywords"
             rows="8"
             cols="60"><?php echo esc_textarea(
-                get_option('wfg_block_keywords')
+                get_option('fgucf7_block_keywords')
             ); ?></textarea>
     </td>
 </tr>
@@ -79,10 +79,10 @@ $tab = isset($_GET['tab'])
     <th>Disposable Domains</th>
     <td>
         <textarea
-            name="wfg_disposable_domains"
+            name="fgucf7_disposable_domains"
             rows="8"
             cols="60"><?php echo esc_textarea(
-                get_option('wfg_disposable_domains')
+                get_option('fgucf7_disposable_domains')
             ); ?></textarea>
     </td>
 </tr>
@@ -96,10 +96,10 @@ $tab = isset($_GET['tab'])
     <td>
         <input
             type="number"
-            name="wfg_log_retention_days"
+            name="fgucf7_log_retention_days"
             value="<?php echo esc_attr(
                 get_option(
-                    'wfg_log_retention_days',
+                    'fgucf7_log_retention_days',
                     90
                 )
             ); ?>">

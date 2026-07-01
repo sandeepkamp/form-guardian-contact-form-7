@@ -4,14 +4,14 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class WFG_Admin
+class FGUCF7_Admin
 {
 
     private function get_logs_table_name()
     {
         global $wpdb;
 
-        return $wpdb->prefix . 'wfg_logs';
+        return $wpdb->prefix . 'fgucf7_logs';
     }
 
     public function __construct()
@@ -20,7 +20,7 @@ class WFG_Admin
         add_action('admin_menu', [$this, 'menu']);
 
         add_action(
-            'admin_post_wfg_export_logs',
+            'admin_post_fgucf7_export_logs',
             [$this, 'export_logs']
         );
 
@@ -39,23 +39,23 @@ class WFG_Admin
     {
 
         if (
-            $hook !== 'toplevel_page_wfg-dashboard'
+            $hook !== 'toplevel_page_fgucf7-dashboard'
         ) {
             return;
         }
 
         wp_enqueue_style(
-            'wfg-admin',
-            WFG_URL . 'assets/css/admin.css',
+            'fgucf7-admin',
+            FGUCF7_URL . 'assets/css/admin.css',
             [],
-            WFG_VERSION
+            FGUCF7_VERSION
         );
 
         wp_enqueue_script(
-            'wfg-dashboard',
-            WFG_URL . 'assets/js/dashboard.js',
+            'fgucf7-dashboard',
+            FGUCF7_URL . 'assets/js/dashboard.js',
             [],
-            WFG_VERSION,
+            FGUCF7_VERSION,
             true
         );
 
@@ -77,18 +77,18 @@ class WFG_Admin
                 );
 
             // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-            $blocked_count = (int) wp_cache_get('wfg_blocked_logs_' . $date, 'form-guardian') ?: $wpdb->get_var(
+            $blocked_count = (int) wp_cache_get('fgucf7_blocked_logs_' . $date, 'form-guardian') ?: $wpdb->get_var(
                 $wpdb->prepare(
-                    'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'wfg_logs' . ' WHERE status = %s AND DATE(created_at) = %s',
+                    'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s AND DATE(created_at) = %s',
                     'blocked',
                     $date
                 )
             );
 
             // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-            $passed_count = (int) wp_cache_get('wfg_passed_logs_' . $date, 'form-guardian') ?: $wpdb->get_var(
+            $passed_count = (int) wp_cache_get('fgucf7_passed_logs_' . $date, 'form-guardian') ?: $wpdb->get_var(
                 $wpdb->prepare(
-                    'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'wfg_logs' . ' WHERE status = %s AND DATE(created_at) = %s',
+                    'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s AND DATE(created_at) = %s',
                     'passed',
                     $date
                 )
@@ -102,8 +102,8 @@ class WFG_Admin
         }
 
         wp_localize_script(
-            'wfg-dashboard',
-            'wfgStats',
+            'fgucf7-dashboard',
+            'fgucf7Stats',
             $chart_data
         );
     }
@@ -116,35 +116,35 @@ class WFG_Admin
         $table = $this->get_logs_table_name();
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $total = (int) wp_cache_get('wfg_total_logs', 'form-guardian') ?: $wpdb->get_var(
-            'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'wfg_logs'
+        $total = (int) wp_cache_get('fgucf7_total_logs', 'form-guardian') ?: $wpdb->get_var(
+            'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs'
         );
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $blocked = (int) wp_cache_get('wfg_blocked_logs', 'form-guardian') ?: $wpdb->get_var(
+        $blocked = (int) wp_cache_get('fgucf7_blocked_logs', 'form-guardian') ?: $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'wfg_logs' . ' WHERE status = %s',
+                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s',
                 'blocked'
             )
         );
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $passed = (int) wp_cache_get('wfg_passed_logs', 'form-guardian') ?: $wpdb->get_var(
+        $passed = (int) wp_cache_get('fgucf7_passed_logs', 'form-guardian') ?: $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'wfg_logs' . ' WHERE status = %s',
+                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s',
                 'passed'
             )
         );
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $today = (int) wp_cache_get('wfg_today_blocked_logs', 'form-guardian') ?: $wpdb->get_var(
+        $today = (int) wp_cache_get('fgucf7_today_blocked_logs', 'form-guardian') ?: $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'wfg_logs' . ' WHERE status = %s AND DATE(created_at) = CURDATE()',
+                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s AND DATE(created_at) = CURDATE()',
                 'blocked'
             )
         );
 
-        include WFG_PATH . 'templates/dashboard.php';
+        include FGUCF7_PATH . 'templates/dashboard.php';
     }
 
     // Add dashboard widget
@@ -152,7 +152,7 @@ class WFG_Admin
     {
 
         wp_add_dashboard_widget(
-            'wfg_dashboard_widget',
+            'fgucf7_dashboard_widget',
             'WP Form Guardian Stats',
             [$this, 'dashboard_content']
         );
@@ -165,20 +165,20 @@ class WFG_Admin
 
         $table = $this->get_logs_table_name();
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $total = (int) wp_cache_get('wfg_total_logs_widget', 'form-guardian') ?: $wpdb->get_var(
-            'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'wfg_logs'
+        $total = (int) wp_cache_get('fgucf7_total_logs_widget', 'form-guardian') ?: $wpdb->get_var(
+            'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs'
         );
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $blocked = (int) wp_cache_get('wfg_blocked_logs_widget', 'form-guardian') ?: $wpdb->get_var(
+        $blocked = (int) wp_cache_get('fgucf7_blocked_logs_widget', 'form-guardian') ?: $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'wfg_logs' . ' WHERE status = %s',
+                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s',
                 'blocked'
             )
         );
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $passed = (int) wp_cache_get('wfg_passed_logs_widget', 'form-guardian') ?: $wpdb->get_var(
+        $passed = (int) wp_cache_get('fgucf7_passed_logs_widget', 'form-guardian') ?: $wpdb->get_var(
             $wpdb->prepare(
-                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'wfg_logs' . ' WHERE status = %s',
+                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s',
                 'passed'
             )
         );
@@ -212,13 +212,13 @@ class WFG_Admin
         global $wpdb;
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $logs = wp_cache_get('wfg_export_logs', 'form-guardian') ?: $wpdb->get_results(
-            'SELECT * FROM ' . $wpdb->prefix . 'wfg_logs',
+        $logs = wp_cache_get('fgucf7_export_logs', 'form-guardian') ?: $wpdb->get_results(
+            'SELECT * FROM ' . $wpdb->prefix . 'fgucf7_logs',
             ARRAY_A
         );
 
         header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename=wfg-logs.csv');
+        header('Content-Disposition: attachment; filename=fgucf7-logs.csv');
 
         // phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen
         $output = fopen('php://output', 'w');
@@ -244,23 +244,23 @@ class WFG_Admin
             'WP Form Guardian',
             'Form Guardian',
             'manage_options',
-            'wfg-dashboard',
+            'fgucf7-dashboard',
             [$this, 'dashboard_page'],
             'dashicons-shield',
             30
         );
 
         add_submenu_page(
-            'wfg-dashboard',
+            'fgucf7-dashboard',
             'Dashboard',
             'Dashboard',
             'manage_options',
-            'wfg-dashboard',
+            'fgucf7-dashboard',
             [$this, 'dashboard_page']
         );
 
         add_submenu_page(
-            'wfg-dashboard',
+            'fgucf7-dashboard',
             'Settings',
             'Settings',
             'manage_options',
@@ -269,11 +269,11 @@ class WFG_Admin
         );
 
         add_submenu_page(
-            'wfg-dashboard',
+            'fgucf7-dashboard',
             'Logs',
             'Logs',
             'manage_options',
-            'wfg-logs',
+            'fgucf7-logs',
             [$this, 'logs_page']
         );
     }
@@ -290,7 +290,7 @@ class WFG_Admin
             <form method="post" action="options.php">
 
                 <?php
-                settings_fields('wfg_settings_group');
+                settings_fields('fgucf7_settings_group');
                 ?>
 
                 <table class="form-table">
@@ -299,11 +299,11 @@ class WFG_Admin
                         <th>Blocked Keywords</th>
                         <td>
                             <textarea
-                                name="wfg_block_keywords"
+                                name="fgucf7_block_keywords"
                                 rows="10"
                                 cols="50"><?php
                                             echo esc_textarea(
-                                                get_option('wfg_block_keywords')
+                                                get_option('fgucf7_block_keywords')
                                             );
                                             ?></textarea>
                         </td>
@@ -314,9 +314,9 @@ class WFG_Admin
                         <td>
                             <input
                                 type="number"
-                                name="wfg_max_attempts"
+                                name="fgucf7_max_attempts"
                                 value="<?php echo esc_attr(
-                                            get_option('wfg_max_attempts', 5)
+                                            get_option('fgucf7_max_attempts', 5)
                                         ); ?>"
                                 min="1">
                         </td>
@@ -326,11 +326,11 @@ class WFG_Admin
                         <th>Disposable Domains</th>
                         <td>
                             <textarea
-                                name="wfg_disposable_domains"
+                                name="fgucf7_disposable_domains"
                                 rows="10"
                                 cols="50"><?php
                                             echo esc_textarea(
-                                                get_option('wfg_disposable_domains')
+                                                get_option('fgucf7_disposable_domains')
                                             );
                                             ?></textarea>
                         </td>
@@ -351,7 +351,7 @@ class WFG_Admin
     public function logs_page()
     {
 
-        $table = new WFG_List_Table();
+        $table = new FGUCF7_List_Table();
 
         $table->process_bulk_action();
 
@@ -369,14 +369,14 @@ class WFG_Admin
                 <input
                     type="hidden"
                     name="page"
-                    value="wfg-logs">
+                    value="fgucf7-logs">
 
-                <?php wp_nonce_field('wfg_logs_search', 'wfg_logs_search_nonce', false); ?>
+                <?php wp_nonce_field('fgucf7_logs_search', 'fgucf7_logs_search_nonce', false); ?>
 
                 <?php
                 $table->search_box(
                     'Search Email',
-                    'wfg-search'
+                    'fgucf7-search'
                 );
 
                 $table->display();

@@ -1,18 +1,18 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    if (typeof wfgStats === 'undefined') {
+    if (typeof fgucf7Stats === 'undefined') {
         return;
     }
 
-    const ctx = document.getElementById('wfgChart');
+    const ctx = document.getElementById('fgucf7Chart');
 
     if (!ctx) {
         return;
     }
 
-    const labels = Array.isArray(wfgStats.labels) ? wfgStats.labels : [];
-    const blocked = Array.isArray(wfgStats.blocked) ? wfgStats.blocked : [];
-    const passed = Array.isArray(wfgStats.passed) ? wfgStats.passed : [];
+    const labels = Array.isArray(fgucf7Stats.labels) ? fgucf7Stats.labels : [];
+    const blocked = Array.isArray(fgucf7Stats.blocked) ? fgucf7Stats.blocked : [];
+    const passed = Array.isArray(fgucf7Stats.passed) ? fgucf7Stats.passed : [];
 
     if (!labels.length) {
         return;
