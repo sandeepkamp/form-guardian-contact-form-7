@@ -65,8 +65,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     chart.fillStyle = '#1d2327';
     chart.font = '12px sans-serif';
+    chart.textAlign = 'left';
+    chart.textBaseline = 'top';
+    const labelStep = Math.max(1, Math.ceil(labels.length / 10));
+
     labels.forEach(function (label, index) {
+        if (index % labelStep !== 0 && index !== labels.length - 1) {
+            return;
+        }
+
         const x = padding + stepX * index;
-        chart.fillText(label, x - 12, height - 8);
+        const y = height - padding + 10;
+
+        chart.save();
+        chart.translate(x, y);
+        chart.rotate(-Math.PI / 4);
+        chart.fillText(label, 0, 0);
+        chart.restore();
     });
 });

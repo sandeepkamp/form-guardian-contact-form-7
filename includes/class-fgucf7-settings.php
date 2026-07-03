@@ -46,5 +46,22 @@ class FGUCF7_Settings
                 'sanitize_callback' => 'absint',
             ]
         );
+
+        register_setting(
+            'fgucf7_settings_group',
+            'fgucf7_blocked_ips',
+            [
+                'sanitize_callback' => 'sanitize_textarea_field'
+            ]
+        );
+
+        register_setting(
+            'fgucf7_settings_group',
+            'fgucf7_duplicate_minutes',
+            [
+                'sanitize_callback' => 'absint',
+                'default' => 30,
+            ]
+        );
     }
 }

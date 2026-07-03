@@ -335,6 +335,66 @@ class FGUCF7_Admin
                                             ?></textarea>
                         </td>
                     </tr>
+                    <tr>
+                        <th scope="row">
+                            <?php esc_html_e(
+                                'Duplicate Submission Window (Minutes)',
+                                'form-guardian-for-contact-form-7'
+                            ); ?>
+                        </th>
+
+                        <td>
+
+                            <input
+                                type="number"
+                                min="1"
+                                max="1440"
+                                name="fgucf7_duplicate_minutes"
+                                value="<?php echo esc_attr(
+                                            get_option(
+                                                'fgucf7_duplicate_minutes',
+                                                30
+                                            )
+                                        ); ?>" />
+
+                            <p class="description">
+                                <?php esc_html_e(
+                                    'Block identical email and message submissions within this time period.',
+                                    'form-guardian-for-contact-form-7'
+                                ); ?>
+                            </p>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">
+                            <?php esc_html_e(
+                                'Blocked IP Addresses',
+                                'form-guardian-for-contact-form-7'
+                            ); ?>
+                        </th>
+
+                        <td>
+
+                            <textarea
+                                name="fgucf7_blocked_ips"
+                                rows="8"
+                                cols="60"><?php
+                                            echo esc_textarea(
+                                                get_option(
+                                                    'fgucf7_blocked_ips',
+                                                    ''
+                                                )
+                                            );
+                                            ?></textarea>
+
+                            <p class="description">
+                                One IP address per line.
+                            </p>
+
+                        </td>
+                    </tr>
 
                 </table>
 

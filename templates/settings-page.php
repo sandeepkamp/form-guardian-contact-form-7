@@ -35,6 +35,7 @@ $tab = isset($_GET['tab'])
     <form method="post" action="options.php">
 
         <?php
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         settings_fields('fgucf7_settings_group');
         do_settings_sections('fgucf7_settings_group');
         ?>
@@ -84,6 +85,20 @@ $tab = isset($_GET['tab'])
             cols="60"><?php echo esc_textarea(
                 get_option('fgucf7_disposable_domains')
             ); ?></textarea>
+    </td>
+</tr>
+
+<tr>
+    <th>Duplicate Submission Window</th>
+    <td>
+        <input
+            type="number"
+            name="fgucf7_duplicate_minutes"
+            value="<?php echo esc_attr(
+                get_option('fgucf7_duplicate_minutes', 30)
+            ); ?>">
+        minutes
+        <p class="description">Block identical email and message submissions within this time period.</p>
     </td>
 </tr>
 

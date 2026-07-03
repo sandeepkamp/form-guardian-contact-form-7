@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Form Guardian for Contact Form 7
  * Description: Protect Contact Form 7 forms from spam with honeypot protection, rate limiting, keyword filtering, disposable email blocking, and submission logs.
- * Version: 1.0.0
+ * Version: 1.1
  * Author: Sandeep Kamp
  * License: GPL v2 or later
  * Text Domain: form-guardian-for-contact-form-7
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('FGUCF7_VERSION', '1.0.0');
+define('FGUCF7_VERSION', '1.1');
 define('FGUCF7_PATH', plugin_dir_path(__FILE__));
 define('FGUCF7_URL', plugin_dir_url(__FILE__));
 
@@ -28,6 +28,9 @@ require_once FGUCF7_PATH . 'includes/class-fgucf7-list-table.php';
 register_activation_hook(__FILE__, ['FGUCF7_Logger', 'create_table']);
 register_uninstall_hook(__FILE__, ['FGUCF7_Logger', 'drop_table']);
 register_activation_hook(__FILE__, 'fgucf7_schedule_cleanup');
+
+// Ensure any existing log table is upgraded with the new message column.
+FGUCF7_Logger::maybe_upgrade_table();
 
 new FGUCF7_Admin();
 new FGUCF7_Settings();
