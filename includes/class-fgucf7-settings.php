@@ -63,5 +63,58 @@ class FGUCF7_Settings
                 'default' => 30,
             ]
         );
+
+        register_setting(
+            'fgucf7_settings_group',
+            'fgucf7_max_urls',
+            [
+                'sanitize_callback' => 'absint',
+                'default'           => 2,
+            ]
+        );
+
+        register_setting(
+            'fgucf7_settings_group',
+            'fgucf7_allowed_emails',
+            [
+                'sanitize_callback' => 'sanitize_textarea_field',
+            ]
+        );
+
+        register_setting(
+            'fgucf7_settings_group',
+            'fgucf7_allowed_ips',
+            [
+                'sanitize_callback' => 'sanitize_textarea_field',
+            ]
+        );
+
+        register_setting(
+            'fgucf7_settings_group',
+            'fgucf7_enable_mx_validation',
+            array(
+                'type'              => 'boolean',
+                'sanitize_callback' => 'absint',
+                'default'           => 0,
+            )
+        );
+
+        register_setting(
+            'fgucf7_settings_group',
+            'fgucf7_enable_auto_ip_ban',
+            [
+                'sanitize_callback' => 'absint',
+                'default' => 0,
+            ]
+        );
+
+        register_setting(
+            'fgucf7_settings_group',
+            'fgucf7_auto_ip_ban_limit',
+            [
+                'sanitize_callback' => 'absint',
+                'default' => 5,
+            ]
+        );
     }
 }

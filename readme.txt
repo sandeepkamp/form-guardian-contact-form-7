@@ -1,29 +1,53 @@
 === Form Guardian for Contact Form 7 ===  
 Contributors: sandeepkamp  
-Tags: spam, contact form 7, security, honeypot  
+Tags: contact form 7, spam protection, anti spam, contact form security, honeypot  
 Requires at least: 6.0  
 Tested up to: 7.0  
 Requires PHP: 7.4  
 Stable tag: 1.1  
 License: GPLv2 or later
 
-Protect Contact Form 7 forms from spam with a honeypot, rate limiting, duplicate submission prevention, keyword filtering, disposable email blocking, and submission logs.
+Stop Contact Form 7 spam with honeypot protection, automatic IP blocking, duplicate submission prevention, disposable email filtering, rate limiting, and detailed activity logs—without CAPTCHAs.
 
 == Description ==
 
-Form Guardian for Contact Form 7 adds an extra layer of spam protection to your CF7 forms without changing the front-end experience for legitimate users.
+Protect Contact Form 7 from spam with IP blocking, duplicate submission protection, URL spam detection, rate limiting, keyword filtering, and activity logs—no CAPTCHA required.
 
 Features include:
 
-*   Honeypot field protection
-*   **NEW:** Duplicate submission protection within a configurable time period
-*   Per-IP rate limiting for repeated submissions
-*   Keyword filtering for suspicious text
-*   Disposable email domain blocking
-*   Submission logging for review and analysis
-*   IP address blocking feature to ban persistent spammers
+* Honeypot protection against spambots
+* IP rate limiting to prevent repeated submissions
+* Manual IP address blocking
+* Duplicate submission detection with configurable time window
+* URL spam detection with configurable maximum URL limit
+* Block suspicious keywords
+* Block disposable email domains
+* Submission activity logs
+* Dashboard with spam statistics
+* Automatic IP blocking after reaching the configured limit
+* Simple admin settings page
+* Lightweight and optimized for performance
+* Built specifically for Contact Form 7
+* WordPress Coding Standards compliant
 
-The plugin adds a simple settings screen under the WordPress admin where you can configure the protection rules.
+== Why Form Guardian? ==
+
+Many spam protection plugins rely on CAPTCHAs that interrupt legitimate visitors.
+
+Form Guardian works silently in the background by combining multiple protection techniques including honeypot detection, IP rate limiting, duplicate submission prevention, disposable email blocking, keyword filtering, and URL detection.
+
+The result is fewer spam submissions while maintaining a smooth experience for genuine visitors.
+
+== Perfect For ==
+
+* Business websites
+* Company contact forms
+* Freelancers
+* Agencies
+* WooCommerce stores
+* Blogs
+* Portfolio websites
+* Membership sites
 
 == Installation ==
 
@@ -33,11 +57,45 @@ The plugin adds a simple settings screen under the WordPress admin where you can
 
 == Frequently Asked Questions ==
 
-= Does this plugin work with Contact Form 7? =  
-Yes. This plugin is built specifically for Contact Form 7.
+= Does it stop Contact Form 7 spam? 
 
-= Does it require any extra setup? =  
-No. After activation, it starts protecting forms immediately and you can adjust the settings from the plugin settings page.
+Yes. Form Guardian blocks common spam techniques including repeated submissions, disposable email addresses, excessive links, suspicious keywords, and blocked IP addresses.
+
+= Does it replace Google reCAPTCHA? 
+
+Yes. Many websites use Form Guardian without CAPTCHA to provide a smoother user experience.
+
+= Does it work with caching plugins? 
+
+Yes.
+
+= Does it slow down my website? 
+
+No. The plugin is designed to be lightweight and uses optimized processing.
+
+= Does it store spam logs? 
+
+Yes.
+
+= Can I whitelist IP addresses? 
+
+Yes.
+
+= Can I configure the duplicate submission time? 
+
+Yes.
+
+= Does it send data to external servers? 
+
+No. All validation happens on your own WordPress site.
+
+== Support ==
+
+Need help?
+
+Create a support topic in the WordPress.org support forum.
+
+Bug reports and feature requests are welcome.
 
 == Screenshots ==
 
@@ -49,9 +107,20 @@ No. After activation, it starts protecting forms immediately and you can adjust 
 
 = 1.1 =
 
-*   New: Implemented duplicate submission protection using temporary fingerprints.
-*   New: Added SQL logging optimization and suppressed false-positive database queries.
-*   Update: Confirmed compatibility strings for version 1.1.
+* New: Added duplicate submission protection with configurable time window.
+* New: Added IP address blocking to prevent known spam sources.
+* New: Added URL spam detection with configurable maximum URL limit.
+* New: Added configurable duplicate submission time limit.
+* New: Added settings for blocked IP addresses.
+* New: Added settings for maximum URLs allowed in a message.
+* Improved dashboard interface and statistics.
+* Improved activity logging with detailed block reasons.
+* Improved admin settings descriptions and usability.
+* Improved spam detection performance using object caching for rate limiting.
+* Improved validation responses shown to blocked users.
+* Updated plugin compatibility with the latest WordPress release.
+* Various security, coding standards, and performance improvements.
+* Fixed PHPCS and Plugin Check issues for WordPress.org compliance.
 
 = 1.0.1 =
 

@@ -44,14 +44,34 @@ class FGUCF7_Spam_Checker
         $message = isset($data['your-message']) ? wp_strip_all_tags(wp_unslash((string) $data['your-message'])) : '';
         $ip = $this->get_user_ip();
 
-        $blocked_ips = array_filter(
-            array_map(
-                'trim',
-                preg_split('/\r\n|[\r\n]/', (string) get_option('fgucf7_blocked_ips', ''))
-            )
-        );
+        /*
+|--------------------------------------------------------------------------
+| Allowlist Check
+|--------------------------------------------------------------------------
+*/
 
-        if ($ip !== '' && in_array($ip, $blocked_ips, true)) {
+        $allowed_emails = $this->get_list_lookup('fgucf7_allowed_emails');
+        $allowed_ips = $this->get_list_lookup('fgucf7_allowed_ips');
+
+        if (
+            ($email !== '' && isset($allowed_emails[$email])) ||
+            ($ip !== '' && isset($allowed_ips[$ip]))
+        ) {
+
+            FGUCF7_Logger::log(
+                $email,
+                $message,
+                $ip,
+                'passed',
+                'Allowlisted'
+            );
+
+            return;
+        }
+
+        $blocked_ips = $this->get_list_lookup('fgucf7_blocked_ips');
+
+        if ($ip !== '' && isset($blocked_ips[$ip])) {
             FGUCF7_Logger::log(
                 $email,
                 $message,
@@ -59,7 +79,7 @@ class FGUCF7_Spam_Checker
                 'blocked',
                 'Blocked IP Address'
             );
-
+            // $this->auto_block_ip($ip);
             $submission->set_status('validation_failed');
             $submission->set_response(
                 __('Your submission has been blocked.', 'form-guardian-for-contact-form-7')
@@ -79,7 +99,7 @@ class FGUCF7_Spam_Checker
                 'blocked',
                 'Honeypot Triggered'
             );
-
+            $this->auto_block_ip($ip);
             $submission->set_status('validation_failed');
             $submission->set_response(
                 __('Your submission has been blocked.', 'form-guardian-for-contact-form-7')
@@ -127,7 +147,7 @@ class FGUCF7_Spam_Checker
                 'blocked',
                 'Rate Limit Exceeded'
             );
-
+            $this->auto_block_ip($ip);
             $submission->set_status('validation_failed');
             $submission->set_response(
                 __('Your submission has been blocked due to too many attempts.', 'form-guardian-for-contact-form-7')
@@ -141,9 +161,8 @@ class FGUCF7_Spam_Checker
             // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
             $duplicate = (int) $wpdb->get_var(
                 $wpdb->prepare(
-                    'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs WHERE email = %s AND message = %s AND created_at >= DATE_SUB(NOW(), INTERVAL %d MINUTE)',
-                    $email,
-                    $message,
+                    'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs WHERE submission_hash = %s AND created_at >= DATE_SUB(NOW(), INTERVAL %d MINUTE)',
+                    $this->get_submission_hash($email, $message),
                     $minutes
                 )
             );
@@ -156,7 +175,7 @@ class FGUCF7_Spam_Checker
                     'blocked',
                     'Duplicate Submission'
                 );
-
+                $this->auto_block_ip($ip);
                 $submission->set_status('validation_failed');
                 $submission->set_response(
                     __('Your submission has been blocked due to a duplicate entry.', 'form-guardian-for-contact-form-7')
@@ -164,14 +183,63 @@ class FGUCF7_Spam_Checker
 
                 return;
             }
+
+            /*
+|--------------------------------------------------------------------------
+| URL Spam Detection
+|--------------------------------------------------------------------------
+*/
+
+            $max_urls = max(
+                0,
+                (int) get_option(
+                    'fgucf7_max_urls',
+                    2
+                )
+            );
+
+            if ($max_urls > 0) {
+
+                preg_match_all(
+                    '/https?:\/\/[^\s]+|www\.[^\s]+/i',
+                    $message,
+                    $matches
+                );
+
+                $url_count = count($matches[0]);
+
+                if ($url_count > $max_urls) {
+
+                    FGUCF7_Logger::log(
+                        $email,
+                        $message,
+                        $ip,
+                        'blocked',
+                        sprintf(
+                            'Too Many URLs (%d)',
+                            $url_count
+                        )
+                    );
+
+                    $this->auto_block_ip($ip);
+
+                    $submission->set_status(
+                        'validation_failed'
+                    );
+
+                    $submission->set_response(
+                        __(
+                            'Your message contains too many links.',
+                            'form-guardian-for-contact-form-7'
+                        )
+                    );
+
+                    return;
+                }
+            }
         }
 
-        $keywords = array_filter(
-            array_map(
-                'trim',
-                preg_split('/\r\n|[\r\n]/', (string) get_option('fgucf7_block_keywords', ''))
-            )
-        );
+        $keywords = $this->get_list_items('fgucf7_block_keywords');
 
         foreach ($keywords as $keyword) {
 
@@ -184,7 +252,7 @@ class FGUCF7_Spam_Checker
                     'blocked',
                     'Keyword Match'
                 );
-
+                $this->auto_block_ip($ip);
                 $submission->set_status('validation_failed');
                 $submission->set_response(
                     __('Your submission has been blocked.', 'form-guardian-for-contact-form-7')
@@ -200,14 +268,9 @@ class FGUCF7_Spam_Checker
             $domain = substr(strrchr($email, '@'), 1);
         }
 
-        $blocked_domains = array_filter(
-            array_map(
-                'trim',
-                preg_split('/\r\n|[\r\n]/', (string) get_option('fgucf7_disposable_domains', ''))
-            )
-        );
+        $blocked_domains = $this->get_list_lookup('fgucf7_disposable_domains');
 
-        if ($domain !== '' && in_array($domain, $blocked_domains, true)) {
+        if ($domain !== '' && isset($blocked_domains[$domain])) {
 
             FGUCF7_Logger::log(
                 $email,
@@ -216,13 +279,57 @@ class FGUCF7_Spam_Checker
                 'blocked',
                 'Disposable Email'
             );
-
+            $this->auto_block_ip($ip);
             $submission->set_status('validation_failed');
             $submission->set_response(
                 __('Your submission has been blocked.', 'form-guardian-for-contact-form-7')
             );
 
             return;
+        }
+
+        /*
+|--------------------------------------------------------------------------
+| MX Record Validation
+|--------------------------------------------------------------------------
+*/
+        $enable_mx_validation = (int) get_option(
+            'fgucf7_enable_mx_validation',
+            get_option('fgucf7_enable_mx_check', 0)
+        );
+
+        if (
+            $enable_mx_validation === 1 &&
+            $domain !== '' &&
+            function_exists('checkdnsrr')
+        ) {
+
+            if (
+                ! checkdnsrr($domain, 'MX') &&
+                ! checkdnsrr($domain, 'A')
+            ) {
+
+                FGUCF7_Logger::log(
+                    $email,
+                    $message,
+                    $ip,
+                    'blocked',
+                    'Invalid MX Record'
+                );
+                $this->auto_block_ip($ip);
+                $submission->set_status(
+                    'validation_failed'
+                );
+
+                $submission->set_response(
+                    __(
+                        'Please enter a valid email address.',
+                        'form-guardian-for-contact-form-7'
+                    )
+                );
+
+                return;
+            }
         }
 
         FGUCF7_Logger::log(
@@ -253,6 +360,105 @@ class FGUCF7_Spam_Checker
         }
 
         return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '';
+    }
+
+    private function get_list_lookup($option_name)
+    {
+        $items = array_filter(
+            array_map(
+                'trim',
+                preg_split(
+                    '/\r\n|[\r\n]/',
+                    (string) get_option($option_name, '')
+                )
+            )
+        );
+
+        return array_fill_keys($items, true);
+    }
+
+    private function get_list_items($option_name)
+    {
+        return array_filter(
+            array_map(
+                'trim',
+                preg_split(
+                    '/\r\n|[\r\n]/',
+                    (string) get_option($option_name, '')
+                )
+            )
+        );
+    }
+
+    private function get_submission_hash($email, $message)
+    {
+        return hash(
+            'sha256',
+            strtolower(trim($email)) . '|' . trim($message)
+        );
+    }
+
+    private function auto_block_ip($ip)
+    {
+        if (empty($ip)) {
+            return;
+        }
+
+        $auto_ban_enabled = (int) get_option(
+            'fgucf7_enable_auto_ip_ban',
+            get_option('fgucf7_enable_auto_ip_block', 0)
+        );
+
+        if ($auto_ban_enabled !== 1) {
+            return;
+        }
+
+        global $wpdb;
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+        $blocked_count = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs
+            WHERE ip_address = %s
+            AND status = %s',
+                $ip,
+                'blocked'
+            )
+        );
+
+        $limit = max(
+            1,
+            (int) get_option(
+                'fgucf7_auto_ip_ban_limit',
+                get_option('fgucf7_auto_ip_block_limit', 10)
+            )
+        );
+
+        if ($blocked_count < $limit) {
+            return;
+        }
+
+        $blocked_ips = $this->get_list_items(
+            'fgucf7_blocked_ips'
+        );
+
+        if (!in_array($ip, $blocked_ips, true)) {
+
+            $blocked_ips[] = $ip;
+
+            update_option(
+                'fgucf7_blocked_ips',
+                implode(PHP_EOL, $blocked_ips)
+            );
+
+            FGUCF7_Logger::log(
+                '',
+                '',
+                $ip,
+                'blocked',
+                'Automatically Blacklisted'
+            );
+        }
     }
 
     public function add_honeypot($content)

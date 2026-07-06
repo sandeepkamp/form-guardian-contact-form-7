@@ -88,16 +88,18 @@ class FGUCF7_List_Table extends WP_List_Table
         return;
       }
 
-      $ids = array_map(
-        'intval',
-        (array) wp_unslash($_POST['log_ids'])
-      );
+      $ids = wp_parse_id_list((array) wp_unslash($_POST['log_ids']));
+
+      if (empty($ids)) {
+        return;
+      }
+
+      $table = $wpdb->prefix . 'fgucf7_logs';
 
       foreach ($ids as $id) {
-
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
         $wpdb->delete(
-          $wpdb->prefix . 'fgucf7_logs',
+          $table,
           ['id' => $id],
           ['%d']
         );
@@ -133,10 +135,9 @@ class FGUCF7_List_Table extends WP_List_Table
       $total_items = wp_cache_get($search_cache_key, 'form-guardian');
       
       if (false === $total_items) {
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $total_items = (int) $wpdb->get_var(
+        $total_items = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
           $wpdb->prepare(
-            'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs WHERE email LIKE %s',
+            'SELECT COUNT(*) FROM ' . esc_sql($wpdb->prefix . 'fgucf7_logs') . ' WHERE email LIKE %s',
             $search_like
           )
         );
@@ -149,10 +150,9 @@ class FGUCF7_List_Table extends WP_List_Table
       $items = wp_cache_get($items_cache_key, 'form-guardian');
       
       if (false === $items) {
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $items = $wpdb->get_results(
+        $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
           $wpdb->prepare(
-            'SELECT * FROM ' . $wpdb->prefix . 'fgucf7_logs WHERE email LIKE %s ORDER BY id DESC LIMIT %d OFFSET %d',
+            'SELECT * FROM ' . esc_sql($wpdb->prefix . 'fgucf7_logs') . ' WHERE email LIKE %s ORDER BY id DESC LIMIT %d OFFSET %d',
             $search_like,
             $per_page,
             $offset
@@ -166,9 +166,8 @@ class FGUCF7_List_Table extends WP_List_Table
       $total_items = wp_cache_get($total_cache_key, 'form-guardian');
       
       if (false === $total_items) {
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $total_items = (int) $wpdb->get_var(
-          'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs'
+        $total_items = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+          'SELECT COUNT(*) FROM ' . esc_sql($wpdb->prefix . 'fgucf7_logs')
         );
         wp_cache_set($total_cache_key, $total_items, 'form-guardian', 60);
       }
@@ -179,10 +178,9 @@ class FGUCF7_List_Table extends WP_List_Table
       $items = wp_cache_get($items_all_cache_key, 'form-guardian');
       
       if (false === $items) {
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $items = $wpdb->get_results(
+        $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
           $wpdb->prepare(
-            'SELECT * FROM ' . $wpdb->prefix . 'fgucf7_logs ORDER BY id DESC LIMIT %d OFFSET %d',
+            'SELECT * FROM ' . esc_sql($wpdb->prefix . 'fgucf7_logs') . ' ORDER BY id DESC LIMIT %d OFFSET %d',
             $per_page,
             $offset
           ),

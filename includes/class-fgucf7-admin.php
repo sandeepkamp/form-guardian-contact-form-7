@@ -37,10 +37,9 @@ class FGUCF7_Admin
 
     public function enqueue_assets($hook)
     {
+        $is_plugin_page = strpos($hook, 'fgucf7') !== false;
 
-        if (
-            $hook !== 'toplevel_page_fgucf7-dashboard'
-        ) {
+        if (!$is_plugin_page) {
             return;
         }
 
@@ -51,61 +50,54 @@ class FGUCF7_Admin
             FGUCF7_VERSION
         );
 
-        wp_enqueue_script(
-            'fgucf7-dashboard',
-            FGUCF7_URL . 'assets/js/dashboard.js',
-            [],
-            FGUCF7_VERSION,
-            true
-        );
-
-        // Prepare and localize chart data
-        global $wpdb;
-        $chart_data = [];
-
-        for ($i = 29; $i >= 0; $i--) {
-
-            $date = wp_date(
-                'Y-m-d',
-                strtotime("-{$i} days")
+        if ($hook === 'toplevel_page_fgucf7-dashboard') {
+            wp_enqueue_script(
+                'fgucf7-dashboard',
+                FGUCF7_URL . 'assets/js/dashboard.js',
+                [],
+                FGUCF7_VERSION,
+                true
             );
 
-            $chart_data['labels'][] =
-                wp_date(
-                    'd M',
-                    strtotime($date)
+            global $wpdb;
+
+            $chart_data = wp_cache_get('fgucf7_dashboard_chart_data', 'form-guardian');
+
+            if (false === $chart_data) {
+                $chart_data = [
+                    'labels' => [],
+                    'blocked' => [],
+                    'passed' => [],
+                ];
+
+                // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+                $results = $wpdb->get_results(
+                    'SELECT status, DATE(created_at) AS day, COUNT(*) AS count FROM ' . $wpdb->prefix . 'fgucf7_logs WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY) GROUP BY status, DATE(created_at)',
+                    ARRAY_A
                 );
 
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-            $blocked_count = (int) wp_cache_get('fgucf7_blocked_logs_' . $date, 'form-guardian') ?: $wpdb->get_var(
-                $wpdb->prepare(
-                    'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s AND DATE(created_at) = %s',
-                    'blocked',
-                    $date
-                )
+                $counts = [];
+                foreach ($results as $row) {
+                    $counts[$row['day']][$row['status']] = (int) $row['count'];
+                }
+
+                for ($i = 29; $i >= 0; $i--) {
+                    $date = wp_date('Y-m-d', strtotime("-{$i} days"));
+
+                    $chart_data['labels'][] = wp_date('d M', strtotime($date));
+                    $chart_data['blocked'][] = $counts[$date]['blocked'] ?? 0;
+                    $chart_data['passed'][] = $counts[$date]['passed'] ?? 0;
+                }
+
+                wp_cache_set('fgucf7_dashboard_chart_data', $chart_data, 'form-guardian', 300);
+            }
+
+            wp_localize_script(
+                'fgucf7-dashboard',
+                'fgucf7Stats',
+                $chart_data
             );
-
-            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-            $passed_count = (int) wp_cache_get('fgucf7_passed_logs_' . $date, 'form-guardian') ?: $wpdb->get_var(
-                $wpdb->prepare(
-                    'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s AND DATE(created_at) = %s',
-                    'passed',
-                    $date
-                )
-            );
-
-            $chart_data['blocked'][] =
-                $blocked_count;
-
-            $chart_data['passed'][] =
-                $passed_count;
         }
-
-        wp_localize_script(
-            'fgucf7-dashboard',
-            'fgucf7Stats',
-            $chart_data
-        );
     }
 
     public function dashboard_page()
@@ -115,34 +107,49 @@ class FGUCF7_Admin
 
         $table = $this->get_logs_table_name();
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $total = (int) wp_cache_get('fgucf7_total_logs', 'form-guardian') ?: $wpdb->get_var(
-            'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs'
-        );
+        $cached_counts = wp_cache_get('fgucf7_dashboard_counts', 'form-guardian');
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $blocked = (int) wp_cache_get('fgucf7_blocked_logs', 'form-guardian') ?: $wpdb->get_var(
-            $wpdb->prepare(
-                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s',
-                'blocked'
-            )
-        );
+        if (false === $cached_counts) {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+            $results = $wpdb->get_results(
+                'SELECT status, COUNT(*) AS count FROM ' . $wpdb->prefix . 'fgucf7_logs GROUP BY status',
+                ARRAY_A
+            );
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $passed = (int) wp_cache_get('fgucf7_passed_logs', 'form-guardian') ?: $wpdb->get_var(
-            $wpdb->prepare(
-                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s',
-                'passed'
-            )
-        );
+            $cached_counts = [
+                'total' => 0,
+                'blocked' => 0,
+                'passed' => 0,
+                'today_blocked' => 0,
+            ];
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $today = (int) wp_cache_get('fgucf7_today_blocked_logs', 'form-guardian') ?: $wpdb->get_var(
-            $wpdb->prepare(
-                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s AND DATE(created_at) = CURDATE()',
-                'blocked'
-            )
-        );
+            foreach ($results as $row) {
+                $cached_counts['total'] += (int) $row['count'];
+
+                if ($row['status'] === 'blocked') {
+                    $cached_counts['blocked'] = (int) $row['count'];
+                }
+
+                if ($row['status'] === 'passed') {
+                    $cached_counts['passed'] = (int) $row['count'];
+                }
+            }
+
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+            $cached_counts['today_blocked'] = (int) $wpdb->get_var(
+                $wpdb->prepare(
+                    'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs WHERE status = %s AND DATE(created_at) = CURDATE()',
+                    'blocked'
+                )
+            );
+
+            wp_cache_set('fgucf7_dashboard_counts', $cached_counts, 'form-guardian', 300);
+        }
+
+        $total = $cached_counts['total'];
+        $blocked = $cached_counts['blocked'];
+        $passed = $cached_counts['passed'];
+        $today = $cached_counts['today_blocked'];
 
         include FGUCF7_PATH . 'templates/dashboard.php';
     }
@@ -164,24 +171,41 @@ class FGUCF7_Admin
         global $wpdb;
 
         $table = $this->get_logs_table_name();
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $total = (int) wp_cache_get('fgucf7_total_logs_widget', 'form-guardian') ?: $wpdb->get_var(
-            'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs'
-        );
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $blocked = (int) wp_cache_get('fgucf7_blocked_logs_widget', 'form-guardian') ?: $wpdb->get_var(
-            $wpdb->prepare(
-                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s',
-                'blocked'
-            )
-        );
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $passed = (int) wp_cache_get('fgucf7_passed_logs_widget', 'form-guardian') ?: $wpdb->get_var(
-            $wpdb->prepare(
-                'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'fgucf7_logs' . ' WHERE status = %s',
-                'passed'
-            )
-        );
+
+        $cached_widget_counts = wp_cache_get('fgucf7_dashboard_widget_counts', 'form-guardian');
+
+        if (false === $cached_widget_counts) {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+            $counts = $wpdb->get_results(
+                'SELECT status, COUNT(*) AS count FROM ' . $wpdb->prefix . 'fgucf7_logs GROUP BY status',
+                ARRAY_A
+            );
+
+            $cached_widget_counts = [
+                'total' => 0,
+                'blocked' => 0,
+                'passed' => 0,
+            ];
+
+            foreach ($counts as $row) {
+                $cached_widget_counts['total'] += (int) $row['count'];
+
+                if ($row['status'] === 'blocked') {
+                    $cached_widget_counts['blocked'] = (int) $row['count'];
+                }
+
+                if ($row['status'] === 'passed') {
+                    $cached_widget_counts['passed'] = (int) $row['count'];
+                }
+            }
+
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+            wp_cache_set('fgucf7_dashboard_widget_counts', $cached_widget_counts, 'form-guardian', 300);
+        }
+
+        $total = $cached_widget_counts['total'];
+        $blocked = $cached_widget_counts['blocked'];
+        $passed = $cached_widget_counts['passed'];
 
 ?>
         <p>
@@ -211,11 +235,16 @@ class FGUCF7_Admin
 
         global $wpdb;
 
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-        $logs = wp_cache_get('fgucf7_export_logs', 'form-guardian') ?: $wpdb->get_results(
-            'SELECT * FROM ' . $wpdb->prefix . 'fgucf7_logs',
-            ARRAY_A
-        );
+        $logs = wp_cache_get('fgucf7_export_logs', 'form-guardian');
+
+        if (false === $logs) {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+            $logs = $wpdb->get_results(
+                'SELECT * FROM ' . $wpdb->prefix . 'fgucf7_logs',
+                ARRAY_A
+            );
+            wp_cache_set('fgucf7_export_logs', $logs, 'form-guardian', 300);
+        }
 
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename=fgucf7-logs.csv');
@@ -281,130 +310,7 @@ class FGUCF7_Admin
     // Render settings page
     public function settings_page()
     {
-    ?>
-
-        <div class="wrap">
-
-            <h1>WP Form Guardian</h1>
-
-            <form method="post" action="options.php">
-
-                <?php
-                settings_fields('fgucf7_settings_group');
-                ?>
-
-                <table class="form-table">
-
-                    <tr>
-                        <th>Blocked Keywords</th>
-                        <td>
-                            <textarea
-                                name="fgucf7_block_keywords"
-                                rows="10"
-                                cols="50"><?php
-                                            echo esc_textarea(
-                                                get_option('fgucf7_block_keywords')
-                                            );
-                                            ?></textarea>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>Maximum Attempts Per Hour</th>
-                        <td>
-                            <input
-                                type="number"
-                                name="fgucf7_max_attempts"
-                                value="<?php echo esc_attr(
-                                            get_option('fgucf7_max_attempts', 5)
-                                        ); ?>"
-                                min="1">
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>Disposable Domains</th>
-                        <td>
-                            <textarea
-                                name="fgucf7_disposable_domains"
-                                rows="10"
-                                cols="50"><?php
-                                            echo esc_textarea(
-                                                get_option('fgucf7_disposable_domains')
-                                            );
-                                            ?></textarea>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">
-                            <?php esc_html_e(
-                                'Duplicate Submission Window (Minutes)',
-                                'form-guardian-for-contact-form-7'
-                            ); ?>
-                        </th>
-
-                        <td>
-
-                            <input
-                                type="number"
-                                min="1"
-                                max="1440"
-                                name="fgucf7_duplicate_minutes"
-                                value="<?php echo esc_attr(
-                                            get_option(
-                                                'fgucf7_duplicate_minutes',
-                                                30
-                                            )
-                                        ); ?>" />
-
-                            <p class="description">
-                                <?php esc_html_e(
-                                    'Block identical email and message submissions within this time period.',
-                                    'form-guardian-for-contact-form-7'
-                                ); ?>
-                            </p>
-
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th scope="row">
-                            <?php esc_html_e(
-                                'Blocked IP Addresses',
-                                'form-guardian-for-contact-form-7'
-                            ); ?>
-                        </th>
-
-                        <td>
-
-                            <textarea
-                                name="fgucf7_blocked_ips"
-                                rows="8"
-                                cols="60"><?php
-                                            echo esc_textarea(
-                                                get_option(
-                                                    'fgucf7_blocked_ips',
-                                                    ''
-                                                )
-                                            );
-                                            ?></textarea>
-
-                            <p class="description">
-                                One IP address per line.
-                            </p>
-
-                        </td>
-                    </tr>
-
-                </table>
-
-                <?php submit_button(); ?>
-
-            </form>
-
-        </div>
-
-    <?php
+        include FGUCF7_PATH . 'templates/settings-page.php';
     }
 
     // Render logs page

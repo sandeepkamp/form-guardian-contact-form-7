@@ -6,9 +6,8 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 
 global $wpdb;
 
-// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange
-$wpdb->query(
-    "DROP TABLE IF EXISTS {$wpdb->prefix}fgucf7_logs"
+$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.NotPrepared
+    'DROP TABLE IF EXISTS ' . esc_sql($wpdb->prefix . 'fgucf7_logs')
 );
 
 // phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange
